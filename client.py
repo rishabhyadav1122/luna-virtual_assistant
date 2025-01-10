@@ -29,12 +29,7 @@ engine = pyttsx3.init()
 engine_lock = threading.Lock()  
 
 
-# API Keys...........
-# gemini_api_key = "AIzaSyDWdl1FsWUg3RRWvplwIBTANmol6e_reS0"
-# newsapi = "5d990439915c468b8c9b9a89d907a7b6"
-# weather_api_key = "96eb9957daba12fda514d621eaef2c44" 
-# fourSquare_api_key = "fsq3B97CnOT1n5INMLkikLrZeSCZCL2FXjmoL/Ps52Ml2Ec=" 
-# currency_api_key = "34a6ba9b6edea180ce921faa"
+
 
 gemini_api_key = os.getenv("gemini_api_key")
 newsapi = os.getenv("newsapi")
