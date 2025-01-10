@@ -11,9 +11,9 @@ from dotenv import load_dotenv
 load_dotenv()
 # Firebase Admin SDK setup
 if not firebase_admin._apps:
-    cred = credentials.Certificate("luna-virtual-assistant-f3308ce4f08a.json")
+    cred = credentials.Certificate("luna-virtual-assistant-f009d-firebase-adminsdk-963ko-5ca0ef1086.json")
     firebase_admin.initialize_app(cred, {
-        "databaseURL": "https://luna-virtual-assistant-default-rtdb.firebaseio.com"
+        "databaseURL": os.getenv("FIREBASE_DATABASE_URL")
     })
 
 

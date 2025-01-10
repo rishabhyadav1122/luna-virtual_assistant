@@ -30,7 +30,6 @@ engine_lock = threading.Lock()
 
 
 
-
 gemini_api_key = os.getenv("gemini_api_key")
 newsapi = os.getenv("newsapi")
 weather_api_key = os.getenv("weather_api_key") 
@@ -592,7 +591,7 @@ def listen_for_commands():
             print(f"Heard command: {command}")# Debugging line to confirm command is heard
             add_command_to_history(command)
             if "stop" in command:
-                speak("Goodbye Rishab")
+                speak("Goodbye , Have a good time")
                 stop_luna()
                 break
             else:
