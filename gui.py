@@ -3,6 +3,14 @@ from client import *
 import time
 from streamlit_option_menu import option_menu
 from firebase_config import login_user, register_user ,profile_page , get_user_data , is_email_verified , complete_registration
+from dotenv import load_dotenv
+import os
+import smtplib
+
+load_dotenv()
+
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 # Custom CSS for styling
 st.markdown(
@@ -309,13 +317,45 @@ def about_us_page():
                 <p style="font-size: 18px; color: #ffffff;"><b>Developer Name :</b> Rishabh Yadav</p>
                 <p style="font-size: 18px; color: #ffffff;"><b>Contact:</b> <a href="mailto:yrishabh325@gmail.com" style="color: #00c8ff; text-decoration: none;">yrishabh325@gmail.com</a></p>
             </div>
+            <h2 style="color: #00c8ff; font-size: 28px; font-weight: bold; margin-bottom: 20px;">Connect with me on : </h2>
+            <div style="margin-top: 20px;">
+                <a href="https://www.instagram.com/rishabh_yadav_1302/" target="_blank" style="margin-right: 10px;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" width="40" height="40">
+                </a>
+                <a href="https://www.linkedin.com/in/rishabh-yadav-40a288289/" target="_blank" style="margin-right: 10px; margin-left: 10px">
+                    <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" width="40" height="40">
+                </a>
+                <a href="https://www.facebook.com/profile.php?id=100012021993965" target="_blank" style="margin-right: 10px;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/174/174848.png" alt="Facebook" width="40" height="40">
+                </a>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
 
+
+def send_email(name, email, message):
+    """Send an email with the feedback details."""
+    try:
+        # Establish connection to the email server
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()  # Secure the connection
+            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+
+            # Create email content
+            subject = "New Feedback Received"
+            body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+            email_message = f"Subject: {subject}\n\n{body}"
+
+            # Send email
+            server.sendmail(EMAIL_ADDRESS, EMAIL_ADDRESS, email_message)  # To: Yourself
+    except Exception as e:
+        st.error(f"Error sending email: {e}")
+
 def contact_us_page():
+    """Contact Us page where users can send feedback."""
     st.markdown(
         """
         <div style="text-align: center; padding: 20px; background-color: #222233; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">
@@ -335,7 +375,11 @@ def contact_us_page():
 
     # Submit button
     if st.button("Send Feedback"):
-        st.success("Thank you for your feedback!")
+        if not name or not email or not message:
+            st.warning("Please fill in all the fields.")
+        else:
+            send_email(name, email, message)
+            st.success("Thank you for your feedback!")
 
 
 def fetch_command_history():
