@@ -25,8 +25,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-engine = pyttsx3.init()
-engine_lock = threading.Lock()  
+# engine = pyttsx3.init()
+# engine_lock = threading.Lock()  
 
 
 
@@ -522,9 +522,9 @@ def start_listening():
 def initialize_luna():
     global is_initialized,is_running
     is_initialized = True
-    voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[1].id)
-    engine.setProperty("rate", 150)
+    # voices = engine.getProperty('voices')
+    # engine.setProperty('voice', voices[1].id)
+    # engine.setProperty("rate", 150)
     init_db_history()
     initialize_database()
     init_db_reminder()
