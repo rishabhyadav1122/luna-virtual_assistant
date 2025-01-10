@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "luna-virtual-assistant",
+  "private_key_id": "f3308ce4f08a72339c77047e5d2e200f2db56111",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQClhwCYAGbIOK5Z\nwGL1cNeqWHS7o7MLgILHn9EujX3dwjdhQS5rm8HZwg3ijQRvRgQo9F32y0yXPo1L\nodiOpUDb11/tlQigClBRtwcjDtWdAaps96e7HEx7yZUdgULpAc/6oL94s39LzTFv\nPRBUW03pXV5odmxv8quLhTuhFc1xc6ko3z49O1GBqHWDoPZ3v56w4o+W0EmjhkpH\nx5qltFp5i0Qp7HYxQnJ/DSLJEqkxLut8Ojg6mp1B8ukbVB7CGsN1NQtVQybWbnqL\nVvt3M+FIdLQcW2aGqBYFviBGZkQHDeWe+zrDRkltR54tIpy2dGbGrBa/dJCqIweI\ncKy3ZIfPAgMBAAECggEAOVRtSbgV4TH0fQRroduf7pFteNHFQO4VHaPGNQvvdJ+A\nQ9BqDf4n4U5bNcSmrQ2AgljEtKYMFHQnRvM6yIkG0j2hrW1JS/jWgb7VG3jXVmZN\nyyjpcJ5oBRW37jynWoF0sbb8KgdtRuk+PmtVXQo0jWd3u9GMVCel75BJK00cVzbq\nyH4o1W7U+cIr5hfZwZlLLmpd0DnU+niYaGAJUSsjuo4xUnX8Bjxi5w6nhRAddD8K\nHZG16vRxVWSxqSfLIR3dNMd77RPW1R9dNryvQmzgsNzFsnJRuAZcScGJoEmUsRvk\niFb3m0+W3mCmXW15e09avbyogVF2/OlBmXqqtXsS+QKBgQDo6FBkgLw2SDvTS5ui\nGCY5ZFU+7/WiZl9h/K7j63Mq1wVddtKPNJJhj+IC0k8ob4kC7iiY4qaEpuOy1Gjl\nmpxtEuOmmlDGPKpKjE+ftHM1rgIs5A9Y0vU8m0zTXA/ZV7os0KnPOEQ2lttgQ0WA\n8tPX7heC8SdNVYI3ZSsodoNIVwKBgQC18HARhIPQ6STXCxXZK4sy5lHMB4qJJR9u\nZ1f3QQCaJ+9H+Riq4IKOhi8YDLzmOoo+jmXaujvm00I+4N+dXN+o4g8o0zKek0Gu\nx6L55dxAAu92cOWd37pm9mb/wz00UkkymmMgqdLjjcSX2HxWEdUl5RyXNlDp6YKN\npN91FR3xSQKBgD+RQHfdxwDNwD5QMX8RNkWNw9J0rccQR9I3pAgi+ADmRNmYl6ls\nQNON8LKycdZocq2xELWBjs8/uX/Sh3q7Mxx1/lo3XfptDlFgcE73ckZhYsibyjCF\nC1fqTxKU2uKIFhErNl2PTtbTX7arRaoHHJifrB0Z8o8h2nOCEkBt8DDrAoGACZVM\nkd+lAdAF/L28vN+qSVgQXurWxTqLWUlgPMnTukr4M5ZPUlDZD6DJwj6JhKb4uSrO\n+qJsnU/rYVx+6s8FiOO/YKsfM3MWNpqVXwxYeZat/lMcBSDPtLSt4DLsemELMfsn\n1YSccxf4jvb8NZxi2cgjpWNbB7chBUz16DjghuECgYA3yk3SLVRlPgrONr935C60\nB6sj/a+K4zXqWE5iTVk2oUD9q+LSymNYxocrhPm4QAT6ylTr2BWIqaPq31zfeokt\nCfOdmKPj9JfCin9S/6fr2Ta1/6hAlxh7y9kDROi0oL4EmeRXETG508LtQwkMol5M\n5JnGHaXtbtcxOO3YjKen2Q==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-pfa31@luna-virtual-assistant.iam.gserviceaccount.com",
+  "client_id": "113663073406932089621",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-pfa31%40luna-virtual-assistant.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
