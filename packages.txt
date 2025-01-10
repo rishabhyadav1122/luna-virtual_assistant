@@ -1,1 +1,1 @@
-pyaudio
+python3-pyaudio
