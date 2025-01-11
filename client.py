@@ -28,16 +28,18 @@ load_dotenv()
 # engine = pyttsx3.init()
 # engine_lock = threading.Lock()  
 
+# gemini_api_key = os.getenv("gemini_api_key")
+# newsapi = os.getenv("newsapi")
+# weather_api_key = os.getenv("weather_api_key") 
+# fourSquare_api_key = os.getenv("fourSquare_api_key") 
+# currency_api_key = os.getenv("currency_api_key")
 
+gemini_api_key = st.secrets["gemini_api_key"]
+newsapi = st.secrets["newsapi"]
+weather_api_key = st.secrets["weather_api_key"]
+fourSquare_api_key = st.secrets["fourSquare_api_key"]
+currency_api_key = st.secrets["currency_api_key"]
 
-gemini_api_key = os.getenv("gemini_api_key")
-newsapi = os.getenv("newsapi")
-weather_api_key = os.getenv("weather_api_key") 
-fourSquare_api_key = os.getenv("fourSquare_api_key") 
-currency_api_key = os.getenv("currency_api_key")
-
-print(os.getenv("gemini_api_key"))
-print("line-43")
 
 
 # Username........
