@@ -8,10 +8,26 @@ import os
 
 from dotenv import load_dotenv
 
+private_key = st.secrets["private_key"]
+client_email = st.secrets["client_email"]
+project_id = st.secrets["project_id"]
+
 load_dotenv()
 # Firebase Admin SDK setup
 if not firebase_admin._apps:
-    cred = credentials.Certificate("luna-virtual-assistant-f009d-firebase-adminsdk-963ko-5ca0ef1086.json")
+    cred = credentials.Certificate({
+    "type": "service_account",
+    "project_id": project_id,
+    "private_key_id": "5ca0ef108617821d52214f09338ba80d3e786381",
+    "private_key": private_key,
+    "client_email": client_email,
+    "client_id": "110506566197243461365",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-963ko%40luna-virtual-assistant-f009d.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+    })
     firebase_admin.initialize_app(cred, {
         # "databaseURL": os.getenv("FIREBASE_DATABASE_URL")
          "databaseURL": st.secrets["FIREBASE_DATABASE_URL"]
