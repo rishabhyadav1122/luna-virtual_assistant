@@ -99,7 +99,7 @@ def register_user(email, password, name, sex, phone_number):
             st.error(f"Registration failed with unknown error: {error_message}")
         return None
     except Exception as e:
-        st.error(f"An unexpected error occurred: {str(e)}")
+        # st.error(f"An unexpected error occurred: {str(e)}")
         return None
 
 
@@ -176,8 +176,8 @@ def complete_registration():
         print("Data saved to permanent db")
 
         # Delete from temporary database
-        db.reference(f"temp_users/{user['localId']}").delete()
-        print("Data deleted from temp db")
+        # db.reference(f"temp_users/{user['localId']}").delete()
+        # print("Data deleted from temp db")
 
         st.success("Registration completed successfully!")
     except Exception as e:
@@ -214,7 +214,7 @@ def is_user_authenticated(token):
 
 def get_user_data(user_id):
     try:
-        user_ref = db.reference(f"users/{user_id}")
+        user_ref = db.reference(f"temp_users/{user_id}")
         user_data = user_ref.get()
         if user_data:
             user_data.setdefault("name", "Rishabh")

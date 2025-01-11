@@ -704,7 +704,8 @@ else:
                         else:
                             st.error("Email not verified. Please check your email and verify it.", icon="❌")
                     else:
-                        st.error("Registration failed. Please try again.", icon="❌")
+                        # st.error("Registration failed. Please try again.", icon="❌")
+                        print("Registration failed. Please try again.", icon="❌")
                 else:
                     st.error("Passwords do not match!", icon="❌")
 
