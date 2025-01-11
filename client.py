@@ -25,8 +25,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+<<<<<<< HEAD
 # engine = pyttsx3.init()
 # engine_lock = threading.Lock()  
+=======
+
+>>>>>>> 726e0fa4ec8d5d364a0d76fafd422f2898e6bf3c
 
 # gemini_api_key = os.getenv("gemini_api_key")
 # newsapi = os.getenv("newsapi")
@@ -524,9 +528,12 @@ def start_listening():
 def initialize_luna():
     global is_initialized,is_running
     is_initialized = True
+<<<<<<< HEAD
     # voices = engine.getProperty('voices')
     # engine.setProperty('voice', voices[1].id)
     # engine.setProperty("rate", 150)
+=======
+>>>>>>> 726e0fa4ec8d5d364a0d76fafd422f2898e6bf3c
     init_db_history()
     initialize_database()
     init_db_reminder()
