@@ -23,6 +23,7 @@ import os
 from dotenv import load_dotenv
 import tempfile
 from streamlit_webrtc import webrtc_streamer
+import base64
 
 load_dotenv()
 
@@ -308,8 +309,19 @@ def speak(text, lang="en"):
         tts.write_to_fp(audio_data)
         audio_data.seek(0)
 
-        # Play the audio in Streamlit
-        st.audio(audio_data, format="audio/mp3")
+        # Encode audio in base64 for embedding in JavaScript
+        audio_base64 = base64.b64encode(audio_data.read()).decode()
+
+        # JavaScript to play the audio automatically
+        audio_html = f"""
+        <script>
+            var audio = new Audio("data:audio/mp3;base64,{audio_base64}");
+            audio.play();
+        </script>
+        """
+        # Render the JavaScript in Streamlit
+        st.markdown(audio_html, unsafe_allow_html=True)
+
     except Exception as e:
         st.error(f"Error in speech synthesis: {e}")
 
@@ -535,46 +547,50 @@ def processCommand(c):
 #             time.sleep(1)  # Small pause to prevent CPU overload
 
 def start_listening():
-    st.write("Listening for wake word 'Luna'...")
-    speak("Say Luna")
+    if not st.session_state.get("is_initialized"):
+        st.warning("Please initialize Luna first.")
+        return
+    
+    st.session_state["is_running"] = True
 
-    webrtc_ctx = webrtc_streamer(
-        key="start_listening",
-        audio_receiver_size=256,
-        video_receiver_size=0,
-    )
-
-    if webrtc_ctx and webrtc_ctx.audio_receiver:
-        audio_frames = webrtc_ctx.audio_receiver.get_frames()
-        if audio_frames:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio:
-                temp_audio.write(audio_frames[0].to_ndarray())
-                temp_audio_path = temp_audio.name
-            # Recognize wake word
+    def listen():
+        recognizer = sr.Recognizer()
+        while st.session_state["is_running"]:
             try:
-                with sr.AudioFile(temp_audio_path) as source:
-                    audio = r.record(source)
-                    word = r.recognize_google(audio).lower()
-                    if "luna" in word:
-                        st.success("Wake word 'Luna' detected!")
-                        speak("How can I assist you?")
-                        listen_for_commands()
-                    else:
-                        st.warning("Wake word not detected. Try again.")
+                with sr.Microphone() as source:
+                    speak("Say 'Luna' to wake me up.")
+                    print("Listening for 'Luna'...")
+                    recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                    audio = recognizer.listen(source, timeout=5, phrase_time_limit=10)
+
+                command = recognizer.recognize_google(audio).lower()
+                print(f"Heard: {command}")
+
+                if "luna" in command:
+                    greet_user()
+                    listen_for_commands()
+
             except sr.UnknownValueError:
-                st.warning("Could not understand the audio.")
+                print("Could not understand audio.")
+                speak("I didn't catch that. Please try again.")
             except sr.RequestError as e:
-                st.error(f"Speech recognition API error: {e}")
+                print(f"Speech recognition error: {e}")
+                speak("There was an issue with speech recognition. Try again.")
+            except sr.WaitTimeoutError:
+                print("Timeout: No speech detected.")
+            except Exception as e:
+                print(f"Error in listening: {e}")
+    
+    # Run the listener in a thread
+    threading.Thread(target=listen, daemon=True).start()
 
 
 def initialize_luna():
-    global is_initialized,is_running
-    is_initialized = True
-    init_db_history()
-    initialize_database()
-    init_db_reminder()
-    print("Luna is ready!")
+    st.session_state["is_initialized"] = True
+    st.session_state["is_running"] = False
     speak("Initializing Luna...")
+    print("Luna is ready!")
+    speak("Luna is ready!")
     
     
 
@@ -594,14 +610,18 @@ def start_luna():
 
 
 
+# def stop_luna():
+#     global is_running
+#     if not is_running:
+#         print("Luna is not running.")
+#         return
+#     is_running = False
+#     speak("Luna is shutting down!")
+#     print("Luna has stopped.")
 def stop_luna():
-    global is_running
-    if not is_running:
-        print("Luna is not running.")
-        return
-    is_running = False
-    speak("Luna is shutting down!")
-    print("Luna has stopped.")
+    st.session_state["is_running"] = False
+    speak("Luna has been stopped.")
+
 
 # Schedule the reminder checker
 schedule.every(1).minute.do(check_reminders_from_db)
@@ -652,38 +672,35 @@ def add_command_to_history(command, user_id=None):
 #             speak("Sorry, Speak again")
 
 def listen_for_commands():
-    st.write("Listening for commands...")
-    speak("Speak now")
+    recognizer = sr.Recognizer()
+    while st.session_state["is_running"]:
+        try:
+            with sr.Microphone() as source:
+                print("Listening for commands...")
+                speak("I'm listening.")
+                recognizer.adjust_for_ambient_noise(source)
+                audio = recognizer.listen(source, timeout=5, phrase_time_limit=10)
 
-    webrtc_ctx = webrtc_streamer(
-        key="listen_for_commands",
-        audio_receiver_size=256,
-        video_receiver_size=0,
-    )
+            command = recognizer.recognize_google(audio).lower()
+            print(f"Heard command: {command}")
+            add_command_to_history(command)
 
-    if webrtc_ctx and webrtc_ctx.audio_receiver:
-        audio_frames = webrtc_ctx.audio_receiver.get_frames()
-        if audio_frames:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio:
-                temp_audio.write(audio_frames[0].to_ndarray())
-                temp_audio_path = temp_audio.name
-            # Recognize commands
-            try:
-                with sr.AudioFile(temp_audio_path) as source:
-                    audio = r.record(source)
-                    command = r.recognize_google(audio).lower()
-                    st.write(f"Heard command: {command}")
-                    add_command_to_history(command)
+            if "stop" in command:
+                speak("Goodbye! Have a great day.")
+                stop_luna()
+                break
+            else:
+                processCommand(command)
 
-                    if "stop" in command:
-                        speak("Goodbye, have a good time!")
-                        stop_luna()
-                    else:
-                        processCommand(command)
-            except sr.UnknownValueError:
-                st.warning("Sorry, I couldn't understand that. Please speak again.")
-            except sr.RequestError as e:
-                st.error(f"Speech recognition API error: {e}")
+        except sr.UnknownValueError:
+            print("Sorry, I couldn't understand that.")
+            speak("Sorry, I couldn't understand that. Please speak again.")
+        except sr.RequestError as e:
+            print(f"Speech recognition service error: {e}")
+            speak("There was an issue with speech recognition. Please try again.")
+        except Exception as e:
+            print(f"Error in command listening: {e}")
+            speak("Something went wrong. Please try again.")
 
 
 if __name__ == "__main__":

@@ -242,6 +242,8 @@ def get_user_history(user_id):
 
 # Define pages for navigation
 def assistant_page():
+
+    # UI Setup
     st.markdown("<div class='title'>Luna: Your Virtual Assistant</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>Personalized Assistance Just for You!</div>", unsafe_allow_html=True)
 
@@ -272,28 +274,64 @@ def assistant_page():
             .note-container a:hover {
                 text-decoration: underline;
             }
+            .dots {
+                margin-top: 10px;
+                text-align: center;
+                font-size: 24px;
+                color: #00c8ff;
+            }
+            .dot {
+                height: 10px;
+                width: 10px;
+                margin: 0 5px;
+                background-color: #00c8ff;
+                border-radius: 50%;
+                display: inline-block;
+                animation: blink 1.5s infinite;
+            }
+            @keyframes blink {
+                50% {
+                    opacity: 0.5;
+                }
+            }
         </style>
         <div class="note-container">
             <strong>Note 1:</strong> Start speaking 2 seconds after the assistant says 
             <em>"Speak Now"</em> or <em>"Say Luna"</em>. This ensures Luna captures your commands accurately.
             <br><br>
-            <strong>Note 2:</strong> For more information about commands, open the <b> Instruction Page </b> 
-            
+            <strong>Note 2:</strong> For more information about commands, open the <b> Instruction Page </b>.
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    # Buttons with functionality
+    # Session State Setup
+    if "is_initialized" not in st.session_state:
+        st.session_state["is_initialized"] = False
+    if "is_running" not in st.session_state:
+        st.session_state["is_running"] = False
+
+    # Button: Initialize Luna
     if st.button("Initialize Luna", key="initialize", help="Prepare Luna for interaction"):
         initialize_luna()
+        st.session_state["is_initialized"] = True
         st.success("Luna Initialized!")
 
+    # Button: Start Luna
     if st.button("Start Luna", key="start", help="Start Luna and listen for commands"):
-        start_luna()
-        is_running=True
-        # Show listening dots animation
-        if is_running:
+        if not st.session_state["is_initialized"]:
+            st.warning("Please initialize Luna first.")
+        else:
+            st.session_state["is_running"] = True
+
+            def start_luna_thread():
+                start_listening()  # Call the non-blocking listening function
+
+            # Start listening in a separate thread
+            threading.Thread(target=start_luna_thread, daemon=True).start()
+            st.info("Luna is now listening for commands...")
+
+            # Show listening animation
             st.markdown(
                 """
                 <div class="dots">
@@ -303,9 +341,15 @@ def assistant_page():
                 unsafe_allow_html=True,
             )
 
+    # Button: Stop Luna
     if st.button("Stop Luna", key="stop", help="Stop Luna and end the session"):
-        stop_luna()
-        st.info("Luna Stopped!")
+        if st.session_state["is_running"]:
+            stop_luna()
+            st.session_state["is_running"] = False
+            st.info("Luna Stopped!")
+        else:
+            st.warning("Luna is not currently running.")
+
 
 def about_us_page():
     st.markdown(
