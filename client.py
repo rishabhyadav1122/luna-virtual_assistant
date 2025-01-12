@@ -302,24 +302,26 @@ def greet_user():
 #         print(f"Error in speech synthesis: {e}")
 
 def speak(text, lang="en"):
+    """
+    Convert text to speech, play automatically, and hide the audio UI in Streamlit.
+    """
     try:
-        # Generate speech audio in memory
+        # Generate speech audio
         tts = gTTS(text=text, lang=lang)
-        audio_data = io.BytesIO()
-        tts.write_to_fp(audio_data)
-        audio_data.seek(0)
+        audio_file_path = "output.mp3"
+        tts.save(audio_file_path)
 
-        # Encode audio in base64 for embedding in JavaScript
-        audio_base64 = base64.b64encode(audio_data.read()).decode()
+        # Encode the audio file for embedding
+        with open(audio_file_path, "rb") as audio_file:
+            audio_bytes = audio_file.read()
+            audio_base64 = base64.b64encode(audio_bytes).decode()
 
-        # JavaScript to play the audio automatically
+        # Create an autoplay audio player
         audio_html = f"""
-        <script>
-            var audio = new Audio("data:audio/mp3;base64,{audio_base64}");
-            audio.play();
-        </script>
+        <audio autoplay hidden>
+            <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
+        </audio>
         """
-        # Render the JavaScript in Streamlit
         st.markdown(audio_html, unsafe_allow_html=True)
 
     except Exception as e:
