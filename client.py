@@ -613,8 +613,14 @@ def start_luna():
 #     speak("Luna is shutting down!")
 #     print("Luna has stopped.")
 def stop_luna():
-    st.session_state["is_running"] = False
-    speak("Luna has been stopped.")
+    """
+    Stops the assistant and performs necessary cleanup.
+    """
+    st.session_state.is_running = False
+    if st.session_state.listening_thread and st.session_state.listening_thread.is_alive():
+        st.session_state.listening_thread.join()
+    speak("Luna has been stopped. Goodbye!")
+
 
 
 # Schedule the reminder checker
@@ -667,7 +673,7 @@ def add_command_to_history(command, user_id=None):
 
 def listen_for_commands():
     """
-    Listen for voice commands and process them in a Streamlit-compatible manner.
+    Continuously listen for voice commands.
     """
     recognizer = sr.Recognizer()
 

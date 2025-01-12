@@ -242,7 +242,11 @@ def get_user_history(user_id):
 
 # Define pages for navigation
 def assistant_page():
-
+    if "is_running" not in st.session_state:
+        st.session_state.is_running = False
+    if "listening_thread" not in st.session_state:
+        st.session_state.listening_thread = None    
+    
     # UI Setup
     st.markdown("<div class='title'>Luna: Your Virtual Assistant</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>Personalized Assistance Just for You!</div>", unsafe_allow_html=True)
@@ -310,12 +314,26 @@ def assistant_page():
         initialize_luna()
         st.success("Luna Initialized!")
 
-    if st.button("Start Luna", key="start"):
-        st.session_state["listening"] = True
-        start_listening()  # Trigger listening
+    if st.button("Start Luna", key="start", help="Start Luna and listen for commands"):
+        if not st.session_state.is_running:
+            st.session_state.is_running = True
+            st.success("Luna is now running!")
+            
+            # Start the listening thread
+            if st.session_state.listening_thread is None or not st.session_state.listening_thread.is_alive():
+                st.session_state.listening_thread = threading.Thread(target=listen_for_commands, daemon=True)
+                st.session_state.listening_thread.start()
+        else:
+            st.warning("Luna is already running.")
 
-    if st.button("Stop Luna", key="stop"):
-        st.session_state["listening"] = False
+    if st.button("Stop Luna", key="stop", help="Stop Luna and end the session"):
+        if st.session_state.is_running:
+            stop_luna()
+            st.session_state.is_running = False
+            st.success("Luna has been stopped!")
+        else:
+            st.warning("Luna is not currently running.")
+
         
 
 
