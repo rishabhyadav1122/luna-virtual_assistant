@@ -301,19 +301,26 @@ def greet_user():
 #     except Exception as e:
 #         print(f"Error in speech synthesis: {e}")
 
-def speak(text):
-    """
-    Synthesize speech and play it using gTTS and Streamlit's audio capabilities.
-    """
+def speak(text, lang="en"):
     try:
-        # Generate speech audio
-        tts = gTTS(text=text, lang="en")
+        # Generate speech audio in memory
+        tts = gTTS(text=text, lang=lang)
         audio_data = io.BytesIO()
         tts.write_to_fp(audio_data)
         audio_data.seek(0)
 
-        # Play audio in Streamlit
-        st.audio(audio_data.read(), format="audio/mp3")
+        # Encode audio in base64 for embedding in JavaScript
+        audio_base64 = base64.b64encode(audio_data.read()).decode()
+
+        # JavaScript to play the audio automatically
+        audio_html = f"""
+        <script>
+            var audio = new Audio("data:audio/mp3;base64,{audio_base64}");
+            audio.play();
+        </script>
+        """
+        # Render the JavaScript in Streamlit
+        st.markdown(audio_html, unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"Error in speech synthesis: {e}")
