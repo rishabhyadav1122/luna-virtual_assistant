@@ -593,23 +593,24 @@ def initialize_luna():
     st.session_state["is_running"] = False
     speak("Initializing Luna...")
     print("Luna is ready!")
-    speak("Luna is ready!")
     
     
 
 def start_luna():
-    global is_initialized, is_running
-    if not is_initialized:
+    if not st.session_state.get("is_initialized", False):
         print("Luna is not initialized. Call initialize_luna first.")
-        speak("Luna is not initialized. Press initialize luna first.")
+        speak("Luna is not initialized. Press initialize Luna first.")
         return
-    if is_running:
+
+    if st.session_state.get("is_running", False):
         print("Luna is already running.")
         return
-    is_running = True
-    threading.Thread(target=start_listening, daemon=True).start()
+
+    st.session_state.is_running = True
+    threading.Thread(target=listen_for_commands, daemon=True).start()
     print("Luna is now listening for commands.")
-    
+    speak("Luna is now listening for commands.")
+
 
 
 
