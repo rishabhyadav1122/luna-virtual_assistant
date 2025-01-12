@@ -21,6 +21,8 @@ import streamlit as st
 from firebase_config import get_user_name
 import os
 from dotenv import load_dotenv
+import tempfile
+from streamlit_webrtc import webrtc_streamer
 
 load_dotenv()
 
@@ -275,6 +277,29 @@ def greet_user():
     speak(greeting_message) 
     print(greeting_message)
 
+# def speak(text, lang="en"):
+#     try:
+#         # Generate speech audio in memory
+#         tts = gTTS(text=text, lang=lang)
+#         audio_data = io.BytesIO()
+#         tts.write_to_fp(audio_data)
+#         audio_data.seek(0)
+
+#         # Initialize pygame and play audio
+#         pygame.mixer.init()
+#         pygame.mixer.music.load(audio_data, "mp3")
+#         pygame.mixer.music.play()
+
+#         # Wait for playback to finish
+#         while pygame.mixer.music.get_busy():
+#             continue
+
+#         pygame.mixer.music.stop()
+#         pygame.mixer.quit()
+
+#     except Exception as e:
+#         print(f"Error in speech synthesis: {e}")
+
 def speak(text, lang="en"):
     try:
         # Generate speech audio in memory
@@ -283,20 +308,10 @@ def speak(text, lang="en"):
         tts.write_to_fp(audio_data)
         audio_data.seek(0)
 
-        # Initialize pygame and play audio
-        pygame.mixer.init()
-        pygame.mixer.music.load(audio_data, "mp3")
-        pygame.mixer.music.play()
-
-        # Wait for playback to finish
-        while pygame.mixer.music.get_busy():
-            continue
-
-        pygame.mixer.music.stop()
-        pygame.mixer.quit()
-
+        # Play the audio in Streamlit
+        st.audio(audio_data, format="audio/mp3")
     except Exception as e:
-        print(f"Error in speech synthesis: {e}")
+        st.error(f"Error in speech synthesis: {e}")
 
 
 
@@ -482,42 +497,74 @@ def processCommand(c):
 
 
 
-def start_listening():
-    global is_running
-    while is_running:
-        try:
-            with sr.Microphone() as source:
-                print("Listening for wake word 'Luna'...")
-                speak("Say Luna")
+# def start_listening():
+#     global is_running
+#     while is_running:
+#         try:
+#             with sr.Microphone() as source:
+#                 print("Listening for wake word 'Luna'...")
+#                 speak("Say Luna")
 
-                # Adjust ambient noise quickly
+#                 # Adjust ambient noise quickly
                 
-                r.adjust_for_ambient_noise(source, duration=0.5)
+#                 r.adjust_for_ambient_noise(source, duration=0.5)
 
-                # Start listening
+#                 # Start listening
                 
-                audio = r.listen(source, timeout=5, phrase_time_limit=10)
+#                 audio = r.listen(source, timeout=5, phrase_time_limit=10)
                
 
-                # Recognize the wake word
-                word = r.recognize_google(audio).lower() 
-                print(f"Heard: {word}")
+#                 # Recognize the wake word
+#                 word = r.recognize_google(audio).lower() 
+#                 print(f"Heard: {word}")
 
-                if "luna" in word:
-                    greet_user()  # Function to respond to user
-                    listen_for_commands()  # Transition to command mode
+#                 if "luna" in word:
+#                     greet_user()  # Function to respond to user
+#                     listen_for_commands()  # Transition to command mode
 
-        except sr.UnknownValueError:
-            print("Could not understand audio. Trying again...")
-            speak("I didn't catch that. Please try again.")
-        except sr.RequestError as e:
-            print(f"Request error from Google Speech API: {e}")
-        except sr.WaitTimeoutError:
-            print("Timeout: No speech detected.")
-        except Exception as e:
-            print(f"Error in start_listening: {e}")
-        finally:
-            time.sleep(1)  # Small pause to prevent CPU overload
+#         except sr.UnknownValueError:
+#             print("Could not understand audio. Trying again...")
+#             speak("I didn't catch that. Please try again.")
+#         except sr.RequestError as e:
+#             print(f"Request error from Google Speech API: {e}")
+#         except sr.WaitTimeoutError:
+#             print("Timeout: No speech detected.")
+#         except Exception as e:
+#             print(f"Error in start_listening: {e}")
+#         finally:
+#             time.sleep(1)  # Small pause to prevent CPU overload
+
+def start_listening():
+    st.write("Listening for wake word 'Luna'...")
+    speak("Say Luna")
+
+    webrtc_ctx = webrtc_streamer(
+        key="start_listening",
+        audio_receiver_size=256,
+        video_receiver_size=0,
+    )
+
+    if webrtc_ctx and webrtc_ctx.audio_receiver:
+        audio_frames = webrtc_ctx.audio_receiver.get_frames()
+        if audio_frames:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio:
+                temp_audio.write(audio_frames[0].to_ndarray())
+                temp_audio_path = temp_audio.name
+            # Recognize wake word
+            try:
+                with sr.AudioFile(temp_audio_path) as source:
+                    audio = r.record(source)
+                    word = r.recognize_google(audio).lower()
+                    if "luna" in word:
+                        st.success("Wake word 'Luna' detected!")
+                        speak("How can I assist you?")
+                        listen_for_commands()
+                    else:
+                        st.warning("Wake word not detected. Try again.")
+            except sr.UnknownValueError:
+                st.warning("Could not understand the audio.")
+            except sr.RequestError as e:
+                st.error(f"Speech recognition API error: {e}")
 
 
 def initialize_luna():
@@ -574,35 +621,70 @@ def add_command_to_history(command, user_id=None):
     add_history(user_id, command)
     print("Database updated!")
 
-def listen_for_commands():
-    while is_running:
-        try:
+# def listen_for_commands():
+#     while is_running:
+#         try:
             
-            schedule.run_pending()
-            time.sleep(1)
-            with sr.Microphone() as source:
-                print("Listening for commands...")
-                speak("Speak Now")
-                r.adjust_for_ambient_noise(source)
-                audio = r.listen(source, timeout=5, phrase_time_limit=10)
-            command = r.recognize_google(audio).lower()
-            print(f"Heard command: {command}")# Debugging line to confirm command is heard
-            add_command_to_history(command)
-            if "stop" in command:
-                speak("Goodbye , Have a good time")
-                stop_luna()
-                break
-            else:
-                processCommand(command)
-        except sr.UnknownValueError:
-            print("Sorry, I couldn't understand that.")
-            speak("Sorry, I couldn't understand that. Please speak again.")
-        except sr.RequestError as e:
-            print(f"Speech recognition service error: {e}")
-            speak("Sorry , Speak again")
-        except Exception as e:
-            print(f"Error: {e}")
-            speak("Sorry, Speak again")
+#             schedule.run_pending()
+#             time.sleep(1)
+#             with sr.Microphone() as source:
+#                 print("Listening for commands...")
+#                 speak("Speak Now")
+#                 r.adjust_for_ambient_noise(source)
+#                 audio = r.listen(source, timeout=5, phrase_time_limit=10)
+#             command = r.recognize_google(audio).lower()
+#             print(f"Heard command: {command}")# Debugging line to confirm command is heard
+#             add_command_to_history(command)
+#             if "stop" in command:
+#                 speak("Goodbye , Have a good time")
+#                 stop_luna()
+#                 break
+#             else:
+#                 processCommand(command)
+#         except sr.UnknownValueError:
+#             print("Sorry, I couldn't understand that.")
+#             speak("Sorry, I couldn't understand that. Please speak again.")
+#         except sr.RequestError as e:
+#             print(f"Speech recognition service error: {e}")
+#             speak("Sorry , Speak again")
+#         except Exception as e:
+#             print(f"Error: {e}")
+#             speak("Sorry, Speak again")
+
+def listen_for_commands():
+    st.write("Listening for commands...")
+    speak("Speak now")
+
+    webrtc_ctx = webrtc_streamer(
+        key="listen_for_commands",
+        audio_receiver_size=256,
+        video_receiver_size=0,
+    )
+
+    if webrtc_ctx and webrtc_ctx.audio_receiver:
+        audio_frames = webrtc_ctx.audio_receiver.get_frames()
+        if audio_frames:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio:
+                temp_audio.write(audio_frames[0].to_ndarray())
+                temp_audio_path = temp_audio.name
+            # Recognize commands
+            try:
+                with sr.AudioFile(temp_audio_path) as source:
+                    audio = r.record(source)
+                    command = r.recognize_google(audio).lower()
+                    st.write(f"Heard command: {command}")
+                    add_command_to_history(command)
+
+                    if "stop" in command:
+                        speak("Goodbye, have a good time!")
+                        stop_luna()
+                    else:
+                        processCommand(command)
+            except sr.UnknownValueError:
+                st.warning("Sorry, I couldn't understand that. Please speak again.")
+            except sr.RequestError as e:
+                st.error(f"Speech recognition API error: {e}")
+
 
 if __name__ == "__main__":
     try:
