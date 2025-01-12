@@ -49,8 +49,13 @@ currency_api_key = st.secrets["currency_api_key"]
 
 
 
-is_initialized = False
-is_running = False
+# Initialize session state variables if not already initialized
+if 'is_initialized' not in st.session_state:
+    st.session_state.is_initialized = False
+
+if 'is_running' not in st.session_state:
+    st.session_state.is_running = False
+
 
 
 
@@ -607,7 +612,7 @@ def start_luna():
         return
 
     st.session_state.is_running = True
-    threading.Thread(target=listen_for_commands, daemon=True).start()
+    threading.Thread(target=start_listening, daemon=True).start()
     print("Luna is now listening for commands.")
     speak("Luna is now listening for commands.")
 
@@ -732,15 +737,15 @@ def listen_for_commands():
 
 
 
-if __name__ == "__main__":
-    try:
-        initialize_luna()
-        start_luna()
-        while is_running:
-            time.sleep(1)  # Keeps the main thread alive
-    except KeyboardInterrupt:
-        print("KeyboardInterrupt received. Shutting down Luna.")
-        stop_luna()
-    except Exception as e:
-        print(f"Unhandled exception: {e}")
-        stop_luna()
+# if __name__ == "__main__":
+#     try:
+#         initialize_luna()
+#         start_luna()
+#         while is_running:
+#             time.sleep(1)  # Keeps the main thread alive
+#     except KeyboardInterrupt:
+#         print("KeyboardInterrupt received. Shutting down Luna.")
+#         stop_luna()
+#     except Exception as e:
+#         print(f"Unhandled exception: {e}")
+#         stop_luna()
