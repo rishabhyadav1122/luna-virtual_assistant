@@ -301,29 +301,23 @@ def greet_user():
 #     except Exception as e:
 #         print(f"Error in speech synthesis: {e}")
 
-def speak(text, lang="en"):
+def speak(text):
+    """
+    Synthesize speech and play it using gTTS and Streamlit's audio capabilities.
+    """
     try:
-        # Generate speech audio in memory
-        tts = gTTS(text=text, lang=lang)
+        # Generate speech audio
+        tts = gTTS(text=text, lang="en")
         audio_data = io.BytesIO()
         tts.write_to_fp(audio_data)
         audio_data.seek(0)
 
-        # Encode audio in base64 for embedding in JavaScript
-        audio_base64 = base64.b64encode(audio_data.read()).decode()
-
-        # JavaScript to play the audio automatically
-        audio_html = f"""
-        <script>
-            var audio = new Audio("data:audio/mp3;base64,{audio_base64}");
-            audio.play();
-        </script>
-        """
-        # Render the JavaScript in Streamlit
-        st.markdown(audio_html, unsafe_allow_html=True)
+        # Play audio in Streamlit
+        st.audio(audio_data.read(), format="audio/mp3")
 
     except Exception as e:
         st.error(f"Error in speech synthesis: {e}")
+
 
 
 
@@ -672,35 +666,54 @@ def add_command_to_history(command, user_id=None):
 #             speak("Sorry, Speak again")
 
 def listen_for_commands():
+    """
+    Listen for voice commands and process them in a Streamlit-compatible manner.
+    """
     recognizer = sr.Recognizer()
-    while st.session_state["is_running"]:
+
+    while st.session_state.get("is_running", False):
         try:
             with sr.Microphone() as source:
-                print("Listening for commands...")
+                st.info("Listening for your command...")
                 speak("I'm listening.")
-                recognizer.adjust_for_ambient_noise(source)
+                
+                # Adjust for ambient noise
+                recognizer.adjust_for_ambient_noise(source, duration=0.5)
+
+                # Capture audio
+                st.write("Please speak your command now.")
                 audio = recognizer.listen(source, timeout=5, phrase_time_limit=10)
 
+            # Recognize the command
             command = recognizer.recognize_google(audio).lower()
-            print(f"Heard command: {command}")
+            st.success(f"Command heard: {command}")
+            speak(f"You said: {command}")
+
+            # Add to history
             add_command_to_history(command)
 
+            # Process commands
             if "stop" in command:
                 speak("Goodbye! Have a great day.")
                 stop_luna()
+                st.session_state["is_running"] = False  # Stop listening
                 break
             else:
                 processCommand(command)
 
         except sr.UnknownValueError:
-            print("Sorry, I couldn't understand that.")
+            st.warning("Sorry, I couldn't understand that. Please try again.")
             speak("Sorry, I couldn't understand that. Please speak again.")
         except sr.RequestError as e:
-            print(f"Speech recognition service error: {e}")
+            st.error(f"Speech recognition service error: {e}")
             speak("There was an issue with speech recognition. Please try again.")
         except Exception as e:
-            print(f"Error in command listening: {e}")
+            st.error(f"Error in command listening: {e}")
             speak("Something went wrong. Please try again.")
+
+        finally:
+            st.write("Waiting for the next command...")
+
 
 
 if __name__ == "__main__":

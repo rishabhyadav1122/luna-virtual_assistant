@@ -306,49 +306,17 @@ def assistant_page():
     )
 
     # Session State Setup
-    if "is_initialized" not in st.session_state:
-        st.session_state["is_initialized"] = False
-    if "is_running" not in st.session_state:
-        st.session_state["is_running"] = False
-
-    # Button: Initialize Luna
-    if st.button("Initialize Luna", key="initialize", help="Prepare Luna for interaction"):
+    if st.button("Initialize Luna", key="initialize"):
         initialize_luna()
-        st.session_state["is_initialized"] = True
         st.success("Luna Initialized!")
 
-    # Button: Start Luna
-    if st.button("Start Luna", key="start", help="Start Luna and listen for commands"):
-        if not st.session_state["is_initialized"]:
-            st.warning("Please initialize Luna first.")
-        else:
-            st.session_state["is_running"] = True
+    if st.button("Start Luna", key="start"):
+        st.session_state["listening"] = True
+        start_listening()  # Trigger listening
 
-            def start_luna_thread():
-                start_listening()  # Call the non-blocking listening function
-
-            # Start listening in a separate thread
-            threading.Thread(target=start_luna_thread, daemon=True).start()
-            st.info("Luna is now listening for commands...")
-
-            # Show listening animation
-            st.markdown(
-                """
-                <div class="dots">
-                    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-    # Button: Stop Luna
-    if st.button("Stop Luna", key="stop", help="Stop Luna and end the session"):
-        if st.session_state["is_running"]:
-            stop_luna()
-            st.session_state["is_running"] = False
-            st.info("Luna Stopped!")
-        else:
-            st.warning("Luna is not currently running.")
+    if st.button("Stop Luna", key="stop"):
+        st.session_state["listening"] = False
+        
 
 
 def about_us_page():
