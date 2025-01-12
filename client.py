@@ -516,6 +516,55 @@ def processCommand(c):
         print(f"AI response: {output}")  # Debugging the AI response
 
 
+def listen_for_commands():
+    """
+    Continuously listen for voice commands.
+    """
+    recognizer = sr.Recognizer()
+
+    while st.session_state.get("is_running", False):
+        try:
+            with sr.Microphone() as source:
+                st.info("Listening for your command...")
+                speak("I'm listening.")
+                
+                # Adjust for ambient noise
+                recognizer.adjust_for_ambient_noise(source, duration=0.5)
+
+                # Capture audio
+                st.write("Please speak your command now.")
+                audio = recognizer.listen(source, timeout=5, phrase_time_limit=10)
+
+            # Recognize the command
+            command = recognizer.recognize_google(audio).lower()
+            st.success(f"Command heard: {command}")
+            speak(f"You said: {command}")
+
+            # Add to history
+            add_command_to_history(command)
+
+            # Process commands
+            if "stop" in command:
+                speak("Goodbye! Have a great day.")
+                stop_luna()
+                st.session_state["is_running"] = False  # Stop listening
+                break
+            else:
+                processCommand(command)
+
+        except sr.UnknownValueError:
+            st.warning("Sorry, I couldn't understand that. Please try again.")
+            speak("Sorry, I couldn't understand that. Please speak again.")
+        except sr.RequestError as e:
+            st.error(f"Speech recognition service error: {e}")
+            speak("There was an issue with speech recognition. Please try again.")
+        except Exception as e:
+            st.error(f"Error in command listening: {e}")
+            speak("Something went wrong. Please try again.")
+
+        finally:
+            st.write("Waiting for the next command...")
+
 
 # def start_listening():
 #     global is_running
@@ -576,7 +625,7 @@ def start_listening():
 
                 if "luna" in command:
                     greet_user()
-                    listen_for_commands()
+                    threading.Thread(target=listen_for_commands, daemon=True).start()
 
             except sr.UnknownValueError:
                 print("Could not understand audio.")
@@ -686,54 +735,7 @@ def add_command_to_history(command, user_id=None):
 #             print(f"Error: {e}")
 #             speak("Sorry, Speak again")
 
-def listen_for_commands():
-    """
-    Continuously listen for voice commands.
-    """
-    recognizer = sr.Recognizer()
 
-    while st.session_state.get("is_running", False):
-        try:
-            with sr.Microphone() as source:
-                st.info("Listening for your command...")
-                speak("I'm listening.")
-                
-                # Adjust for ambient noise
-                recognizer.adjust_for_ambient_noise(source, duration=0.5)
-
-                # Capture audio
-                st.write("Please speak your command now.")
-                audio = recognizer.listen(source, timeout=5, phrase_time_limit=10)
-
-            # Recognize the command
-            command = recognizer.recognize_google(audio).lower()
-            st.success(f"Command heard: {command}")
-            speak(f"You said: {command}")
-
-            # Add to history
-            add_command_to_history(command)
-
-            # Process commands
-            if "stop" in command:
-                speak("Goodbye! Have a great day.")
-                stop_luna()
-                st.session_state["is_running"] = False  # Stop listening
-                break
-            else:
-                processCommand(command)
-
-        except sr.UnknownValueError:
-            st.warning("Sorry, I couldn't understand that. Please try again.")
-            speak("Sorry, I couldn't understand that. Please speak again.")
-        except sr.RequestError as e:
-            st.error(f"Speech recognition service error: {e}")
-            speak("There was an issue with speech recognition. Please try again.")
-        except Exception as e:
-            st.error(f"Error in command listening: {e}")
-            speak("Something went wrong. Please try again.")
-
-        finally:
-            st.write("Waiting for the next command...")
 
 
 
