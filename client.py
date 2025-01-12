@@ -517,53 +517,34 @@ def processCommand(c):
 
 
 def listen_for_commands():
-    """
-    Continuously listen for voice commands.
-    """
     recognizer = sr.Recognizer()
-
-    while st.session_state.get("is_running", False):
+    while st.session_state.is_running:
         try:
             with sr.Microphone() as source:
-                st.info("Listening for your command...")
-                speak("I'm listening.")
-                
-                # Adjust for ambient noise
-                recognizer.adjust_for_ambient_noise(source, duration=0.5)
-
-                # Capture audio
-                st.write("Please speak your command now.")
+                print("Listening for commands...")
+                recognizer.adjust_for_ambient_noise(source)
                 audio = recognizer.listen(source, timeout=5, phrase_time_limit=10)
 
-            # Recognize the command
             command = recognizer.recognize_google(audio).lower()
-            st.success(f"Command heard: {command}")
-            speak(f"You said: {command}")
-
-            # Add to history
+            print(f"Heard command: {command}")
             add_command_to_history(command)
 
-            # Process commands
             if "stop" in command:
+                st.session_state.is_running = False
                 speak("Goodbye! Have a great day.")
                 stop_luna()
-                st.session_state["is_running"] = False  # Stop listening
                 break
             else:
                 processCommand(command)
 
         except sr.UnknownValueError:
-            st.warning("Sorry, I couldn't understand that. Please try again.")
-            speak("Sorry, I couldn't understand that. Please speak again.")
+            print("Sorry, I couldn't understand that.")
+            # You can add this message to a list or use session state to show messages in the UI
         except sr.RequestError as e:
-            st.error(f"Speech recognition service error: {e}")
-            speak("There was an issue with speech recognition. Please try again.")
+            print(f"Speech recognition service error: {e}")
         except Exception as e:
-            st.error(f"Error in command listening: {e}")
-            speak("Something went wrong. Please try again.")
+            print(f"Error in command listening: {e}")
 
-        finally:
-            st.write("Waiting for the next command...")
 
 
 # def start_listening():
@@ -651,19 +632,19 @@ def initialize_luna():
     
 
 def start_luna():
-    if not st.session_state.get("is_initialized", False):
+    if not st.session_state.is_initialized:
         print("Luna is not initialized. Call initialize_luna first.")
         speak("Luna is not initialized. Press initialize Luna first.")
         return
 
-    if st.session_state.get("is_running", False):
+    if st.session_state.is_running:
         print("Luna is already running.")
         return
 
     st.session_state.is_running = True
+    # Start the listening in a background thread, but only update session state here
     threading.Thread(target=start_listening, daemon=True).start()
     print("Luna is now listening for commands.")
-    speak("Luna is now listening for commands.")
 
 
 
