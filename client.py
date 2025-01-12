@@ -518,10 +518,10 @@ def processCommand(c):
 
 def listen_for_commands():
     recognizer = sr.Recognizer()
+
     while st.session_state.is_running:
         try:
             with sr.Microphone() as source:
-                print("Listening for commands...")
                 recognizer.adjust_for_ambient_noise(source)
                 audio = recognizer.listen(source, timeout=5, phrase_time_limit=10)
 
@@ -531,7 +531,6 @@ def listen_for_commands():
 
             if "stop" in command:
                 st.session_state.is_running = False
-                speak("Goodbye! Have a great day.")
                 stop_luna()
                 break
             else:
@@ -539,11 +538,15 @@ def listen_for_commands():
 
         except sr.UnknownValueError:
             print("Sorry, I couldn't understand that.")
-            # You can add this message to a list or use session state to show messages in the UI
+            # Optionally update session_state with the error message
+            st.session_state.last_command_error = "Sorry, I couldn't understand that."
         except sr.RequestError as e:
             print(f"Speech recognition service error: {e}")
+            st.session_state.last_command_error = "There was an issue with speech recognition."
         except Exception as e:
             print(f"Error in command listening: {e}")
+            st.session_state.last_command_error = "Something went wrong."
+
 
 
 
